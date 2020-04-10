@@ -5,19 +5,17 @@
 We announced nested virtualization support coming to Azure with Dv3 or Ev3 series at //build [session](https://channel9.msdn.com/Events/Build/2017/B8087) last month.
 More Information and Capture are much betters Words:
 
-![](https://github.com/digitalarche/AzTrainings/blob/master/img/88616c64-c513-44ac-8259-c201e1798106.png)
+<center><img src="img\88616c64-c513-44ac-8259-c201e1798106.png" style="zoom: 90%;" /></center>
 
-![](https://github.com/digitalarche/AzTrainings/blob/master/img/A-schema-of-nested-virtualization-in-Hyper-V-1024x958.png)
+<center><img src="img\A-schema-of-nested-virtualization-in-Hyper-V-1024x958.png" style="zoom: 70%;" /></center>
 
-Today we are excited to announce that you can now enable nested virtualization using the [Dv3 and Ev3 VM sizes](https://aka.ms/introdande). We will continue to expand support to more VM sizes in the coming months.
+You can now enable nested virtualization using the [Dv3 and Ev3 VM sizes](https://aka.ms/introdande). 
 
 For software and hardware prerequisites, configuration steps and limitations for nested virtualization please see the [document here](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/user-guide/nested-virtualization). In this blog we will discuss a couple interesting use cases and provide a short video demo for enabling a nested VM.
 
-Now not only you can create a Hyper-V container with Docker ([see instructions here](https://docs.microsoft.com/en-us/virtualization/windowscontainers/manage-containers/hyperv-container)), but also by running nested virtualization, you can create a VM inside a VM. Such nested environment provides great flexibility in supporting your needs in various areas such as development, testing, customer training, demo, etc. For example, suppose you have a testing team using Hyper-V hosts on-prem today. They can now easily move their workloads to Azure by using nested VMs as virtualized test machines. The nested VM hosts will be used to replace physical Hyper-V hosts, individual testing engineer will have full control over the Hyper-V functionality on their own assigned VM Host in Azure.
+Now not only you can create a Hyper-V container with Docker ([see instructions here](https://docs.microsoft.com/en-us/virtualization/windowscontainers/manage-containers/hyperv-container)), but also by running nested virtualization, you can create a VM inside a VM. Such nested environment provides great flexibility in supporting your needs in various areas such as development, testing, customer training, demo, etc. 
 
-Let’s look at another example, suppose you want to run your development code, tests or applications on a machine with multiple users on it without impacting them, you can use the nested virtualization technology to spin up independent environments on demand to do that. Within nested VMs, even if you are running a chaos environment your users will not be impacted.
-
-*** How to enable Internet and vNET connectivity for nested VMs in Azure ***
+**How to enable Internet and vNET connectivity for nested VMs in Azure**
 
 http://www.virtualbox.org/manual/ch06.html
 https://pubs.vmware.com/workstation-11/index.jsp?topic=%2Fcom.vmware.ws.using.doc%2FGUID-D9B0A52D-38A2-45D7-A9EB-987ACE77F93C.html
@@ -37,13 +35,12 @@ In certain scenarios, you want those nested VMs to connect to the Internet or ot
 We will need to build a vNet with two subnets, one for the host LAN traffic which may include other Azure VMs as well and another one for Internet traffic where we will enable NAT.
 
 Ours Networks segments:
-
 **rg-migrationsource-lab-vnet** – 10.2.**0**.0/20  (Main address space)
 **subnethosthv (NAT Subnet)** – 10.2.**0**.0/24
 **AzureBastionSubnet**  – 10.2.**1**.0/27
 **subnethostlan (LAN Subnet)** – 10.2.**2**.0/24
 
-![SubnetsCGIINested](img\SubnetsCGIINested.png)
+<center><img src="img\SubnetsCGIINested.png" style="zoom: 90%;" /></center>
 
 Later on, we will use 10.2.**3**.0/24 virtual address space for the nested VMs running inside the Hyper-V host.
 
@@ -77,9 +74,9 @@ New-NetIPAddress –IPAddress 10.2.2.1 -PrefixLength 24 -InterfaceAlias "vEthern
 
 Rename the network adapter names on the Hyper-V host to match the subnet names in Azure, this will make it easier to identify the networks when we are configuring routing. In this example, this is what the host network settings look like after creating the switch.
 
-![](img\Get-NetAdapter.png)
+<center><img src="img\Get-NetAdapter.png" style="zoom: 90%;" /></center>
 
-<img src="img\Ipconfig_Powershell.png" style="zoom: 80%;" />
+<center><img src="img\Ipconfig_Powershell.png" style="zoom: 80%;" /></center>
 
 ## **Configure DHCP**
 
@@ -95,9 +92,10 @@ Set-DhcpServerV4OptionValue -DnsServer 8.8.8.8 -Router 10.2.2.1
 
 First, we will enable NAT for Internet access. Open the **Routing and Remoting Access console**, use custom configuration, select **NAT** and **Routing**, once the service is started, navigate to **IPV4** , right-click **NAT** and select **New Interface.** Now select the interface that matches your NAT subnet and enable NAT as follows:
 
-<img src="img\RoutingRemoteAccessMenu.png" style="zoom:75%;" />
+<center><img src="img\RoutingRemoteAccessMenu.png" style="zoom: 75%;" /></center>
 
-![](img/NAT Public&Enable.png)
+<center><img src="img\NAT Public&Enable.png" /></center>
+
 
 We will now configure static rules to routes to allow traffic from nested VMs to other VMs connected to the Azure virtual network.
 
@@ -109,7 +107,7 @@ This route is to allow the primary interface to respond to traffic destined to i
 
 Create a second route to route traffic destined to the Azure vNet. In this case, we are using 10.0.0.0/16 which encompasses our labvnet including the Hyper-V LAN subnet.
 
-![](img\StaticRoute_LAN.png)
+<center><img src="img\StaticRoute_LAN.png" /></center>
 
 At this point, our host is ready to automatically assign IPs to the nested VMs, it can now also allow VMs to connect to the Internet with RRAS NATing the traffic.
 
@@ -117,9 +115,8 @@ At this point, our host is ready to automatically assign IPs to the nested VMs, 
 
 The last step in the process is to configure UDRs in Azure to enable traffic to flow back and forth between VMs connected to the Azure vNet and nested VM’s in our Hyper-V host. We do so by telling Azure to send all traffic destined to our nested VMs, **10.2.2.0/24** in this example, to the LAN IP of our Hyper-V host where RRAS will route the traffic to the VMs via the internal switch created earlier.
 
-```
+```powershell
 # Vm Must to be Desallocated so stopped. 
-
 $rg = 'rg-migrationsource-lab'
 $vmname = 'svr2016hyperv'
 $vNetName = 'rg-migrationsource-lab-vnet'
@@ -127,45 +124,32 @@ $SubnetLan = 'subnethostlan'
 $location = 'canadacentral'
 
 #Create Route Table
-$routeTableNested = New-AzRouteTable `
-  -Name 'nestedroutetable' `
-  -ResourceGroupName $rg `
-  -location $location
- 
+$routeTableNested = New-AzRouteTable -Name 'nestedroutetable' -ResourceGroupName $rg `
+ 								  -location $location
 #Create route with nested VMs destination and Hyper-V host LAN IP as a next-hop
-$routeTableNested  | Add-AzRouteConfig `
-  -Name "nestedvm-route" `
-  -AddressPrefix 10.2.3.0/24 `
-  -NextHopType "VirtualAppliance" `
-  -NextHopIpAddress 10.2.2.4 `
- | Set-AzRouteTable
- 
+$routeTableNested  | Add-AzRouteConfig -Name "nestedvm-route" -AddressPrefix 10.2.3.0/24 `
+								    -NextHopType "VirtualAppliance" -NextHopIpAddress 10.2.2.4 `
+                  					 | Set-AzRouteTable
 #Associate the route table to the LAN subnet
- Get-AzVirtualNetwork -Name $vNetName | Set-AzVirtualNetworkSubnetConfig `
- -Name $SubnetLan `
- -AddressPrefix 10.2.2.0/24 `
- -RouteTable $routeTableNested | `
-Set-AzVirtualNetwork
+ Get-AzVirtualNetwork -Name $vNetName | Set-AzVirtualNetworkSubnetConfig -Name $SubnetLan `
+   	     			 -AddressPrefix 10.2.2.0/24 -RouteTable $routeTableNested | Set-AzVirtualNetwork
 ```
 
 After creating an additional Azure VM which we want to use to test connectivity from outside the host, our final network topology is this:
 
-![](img\ArchiReseauLabo.png)
-
- 
+<center><img src="img\ArchiReseauLabo.png" /></center>
 
 ## Conclusion
 
 We now have full connectivity to both the Internet and other VMs connected to the Azure vNet allowing the nested VMs to be reachable by other devices outside the Hyper-V host.
 
-![](img\Ping1111 general.png)
+<center><img src="img\Ping1111 general.png" /></center>
 
 All VMs Ping 1.1.1.1 either HOST that VMs Nested. !!
 
+**Manage Performance and Copy speed (Throttling)**
 https://docs.microsoft.com/en-us/azure/migrate/hyper-v-migration-architecture#performance-and-scaling
 https://stackoverflow.com/questions/51179826/azcopy-upload-maxes-out-connection
-
-
 
 **The following are some of the use cases for nested virtualization**
 
