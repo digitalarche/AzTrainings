@@ -5,9 +5,9 @@
 We announced nested virtualization support coming to Azure with Dv3 or Ev3 series at //build [session](https://channel9.msdn.com/Events/Build/2017/B8087) last month.
 More Information and Capture are much betters Words:
 
-![](img\88616c64-c513-44ac-8259-c201e1798106.png)
+![](https://github.com/digitalarche/AzTrainings/blob/master/img/88616c64-c513-44ac-8259-c201e1798106.png)
 
-![](img\A-schema-of-nested-virtualization-in-Hyper-V-1024x958.png)
+![](https://github.com/digitalarche/AzTrainings/blob/master/img/A-schema-of-nested-virtualization-in-Hyper-V-1024x958.png)
 
 Today we are excited to announce that you can now enable nested virtualization using the [Dv3 and Ev3 VM sizes](https://aka.ms/introdande). We will continue to expand support to more VM sizes in the coming months.
 
